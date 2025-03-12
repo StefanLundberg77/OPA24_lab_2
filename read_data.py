@@ -18,9 +18,13 @@ def read_cleaned_data(excel_file, skip=0):
         # drop the wrong size sheet
         dfs.pop(sheet)
 
-    # iterate through dfs and change column names to match layout
-    for sheet, df in dfs.items():
-            df.columns = ["Plats",  
+    dfs = rename_columns(dfs)
+
+    # return the sheets with relevant data
+    return dfs
+
+
+column_names = ["Plats",  
                   "Huvudman",
                   "Totalt\n (A-F)",
                   "Flickor\n (A-F)",
@@ -32,9 +36,14 @@ def read_cleaned_data(excel_file, skip=0):
                   "Flickor\n (poäng)",
                   "Pojkar\n (poäng)"]
 
-    # return the sheets with relevant data
-    return dfs
-
+# function for renaming columns
+def rename_columns(dfs):
+        
+        # iterate through dfs and change column names to match layout
+        for sheet, df in dfs.items():
+            df.columns = [column_names]
+            return dfs
+        
 #for testing purpose 
 if __name__ == "__main__":
     
