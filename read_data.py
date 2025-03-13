@@ -1,10 +1,11 @@
 import pandas as pd
+import numpy as np    
+#pd.set_option('future.no_silent_downcasting', True)
+
+# reading data function
+def read_data(excel_file, skip=0):
     
-pd.set_option('future.no_silent_downcasting', True)
-
-# reading & cleaning data function
-def read_cleaned_data(excel_file, skip=0):
-
+    # data cleaning
     # creates a dict with the sheets and their respective DataFrames
     dfs = pd.read_excel(excel_file, sheet_name=None, skiprows=skip)
 
@@ -17,6 +18,7 @@ def read_cleaned_data(excel_file, skip=0):
     # sheet 1 as reference sheet
     ref_sheet = dfs[list(dfs.keys())[0]]
 
+    # loop through dicts and their dataframes
     for sheet, df in dfs.items():
         
         # Loopa genom referensens kolumner
@@ -25,7 +27,7 @@ def read_cleaned_data(excel_file, skip=0):
             # Kontrollera att kolumnen finns i det aktuella bladet
             if col in df.columns:  
                 
-                df[col] = df[col].replace({"..": 0, "~100": 100}, regex=False)
+                df[col] = df[col].map(lambda x: 0 if x == ".." else (100 if x == "~100" else x))
                 
                 try:
                     if ref_sheet.dtypes[col] in [int, float]:
@@ -41,23 +43,65 @@ def read_cleaned_data(excel_file, skip=0):
 
     # rename columns by function
     dfs = rename_columns(dfs)
+    
     # return the sheets with relevant data
     return dfs
 
 # list of names for layout
 column_names = ["Plats",  
                   "Huvudman",
-                  "Totalt\n (A-F)",
-                  "Flickor\n (A-F)",
-                  "Pojkar\n (A-F)",
-                  "Totalt\n (A-E)",
-                  "Flickor\n (A-E)",
-                  "Pojkar\n (A-E)",
-                  "Totalt\n (poäng)",
-                  "Flickor\n (poäng)",
-                  "Pojkar\n (poäng)"]
+                  "Totalt (A-F)",
+                  "Flickor (A-F)",
+                  "Pojkar (A-F)",
+                  "Totalt (A-E)",
+                  "Flickor (A-E)",
+                  "Pojkar(A-E)",
+                  "Totalt (poäng)",
+                  "Flickor (poäng)",
+                  "Pojkar (poäng)"]
 
-# function for renaming columns
+# alternative function
+def read_data_2(excel_file, skip=0):
+
+    # reading file and cleaning data    
+    # sheets to read
+    sheets_to_read = ["Engelska", "Matematik", "Svenska", "Svenska som andraspråk"]
+
+    # read excel file and create dicts of the sheets and merge them into a dataframe with new column with sheet names as index
+    df_merged = pd.concat(
+    [pd.read_excel(excel_file, sheet_name=sheet, skiprows=skip, index_col=None).assign(Sheet=sheet)
+    for sheet in sheets_to_read],
+    ignore_index=True)
+
+    # rename columns to new names
+    df_merged.columns = ['Plats', 'Huvudman', 
+              'Totalt (A-F)', 'Flickor (A-F)', 'Pojkar (A-F)', 
+              'Totalt (A-E)', 'Flickor (A-E)', 'Pojkar (A-E)', 
+              'Totalt (poäng)', 'Flickor (poäng)', 'Pojkar (poäng)', 'sheet']
+
+    # create a reference dataframe of sheet "Engelska"
+    ref_sheet = df_merged[df_merged['sheet']=='Engelska']
+
+    # create a copy of dataframe
+    df_clean = df_merged.copy()
+
+    # method to convert specific elements in df
+    df_clean = df_clean.map(lambda x: 0 if x == ".." else (100 if x == "~100" else x))
+
+    # method to convert column data type in dataframe to ref_sheet data types
+    df_clean = df_clean.astype(ref_sheet.dtypes.to_dict(), errors="ignore")                          
+    
+    # save clean dataframe to df
+    df = df_clean
+
+    # testing
+    print(len(df_merged)) 
+    print(len(df_clean))
+    
+    # return converted and cleaned dataframe            
+    return df
+
+# function for renaming columns in dict
 def rename_columns(dfs):
         
         # iterate through dfs and change column names to match layout
@@ -84,6 +128,13 @@ def convert_data(dfs):
                 else:
                     df[col] = df[col].astype(ref_sheet.dtypes[col], errors="ignore")
     return dfs
+
+
+
+
+
+
+
 #for testing purpose 
 if __name__ == "__main__":
     
@@ -91,5 +142,5 @@ if __name__ == "__main__":
     excel_file = "data/riket2023_åk9_np.xlsx"
 
     # the returned cleaned file
-    cleaned_dfs = read_cleaned_data(excel_file, skip=8)
-    print(cleaned_dfs)
+    cleaned_df = read_data_2(excel_file, 8)
+    print(cleaned_df)
