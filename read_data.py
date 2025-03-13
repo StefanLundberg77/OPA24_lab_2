@@ -1,5 +1,5 @@
 import pandas as pd
-import numpy as np    
+#import numpy as np    
 #pd.set_option('future.no_silent_downcasting', True)
 
 # reading data function
@@ -94,12 +94,21 @@ def read_data_2(excel_file, skip=0):
     # save clean dataframe to df
     df = df_clean
 
-    # testing
+    # testing len for missing rows
     print(len(df_merged)) 
     print(len(df_clean))
     
     # return converted and cleaned dataframe            
     return df
+
+def clean_sheet(df, sheet_name):
+    
+    df_sheet = df[df["sheet"] == sheet_name]
+
+    df_clean_sheet = df_sheet.drop(columns=["sheet"]).reset_index(drop=True)
+
+    return df_clean_sheet
+
 
 # function for renaming columns in dict
 def rename_columns(dfs):
