@@ -86,7 +86,7 @@ def read_data_2(excel_file, skip=0):
     df_clean = df_merged.copy()
 
     # method to convert specific elements in df
-    df_clean = df_clean.map(lambda x: 0 if x == ".." else (100 if x == "~100" else x))
+    df_clean = df_clean.map(lambda x: 0 if x == ".." else (0 if x == "~100" else x))
 
     # method to convert column data type in dataframe to ref_sheet data types
     df_clean = df_clean.astype(ref_sheet.dtypes.to_dict(), errors="ignore")                          
@@ -95,16 +95,19 @@ def read_data_2(excel_file, skip=0):
     df = df_clean
 
     # testing len for missing rows
-    print(len(df_merged)) 
-    print(len(df_clean))
+    # print(len(df_merged)) 
+    # print(len(df_clean))
     
     # return converted and cleaned dataframe            
     return df
 
-def clean_sheet(df, sheet_name):
+# function for selecting sheet and cleaning
+def sheet_filter(df, sheet_name):
     
+    # create df with the selected sheet name
     df_sheet = df[df["sheet"] == sheet_name]
 
+    # 
     df_clean_sheet = df_sheet.drop(columns=["sheet"]).reset_index(drop=True)
 
     return df_clean_sheet
