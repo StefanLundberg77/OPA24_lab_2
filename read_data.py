@@ -61,11 +61,11 @@ column_names = ["Plats",
                   "Pojkar (poäng)"]
 
 # alternative function
-def read_data_2(excel_file, skip=0):
+def read_data_2(excel_file, sheets_to_read, columns, skip=0):
 
     # reading file and cleaning data    
     # sheets to read
-    sheets_to_read = ["Engelska", "Matematik", "Svenska", "Svenska som andraspråk"]
+    
 
     # read excel file and create dicts of the sheets and merge them into a dataframe with new column with sheet names as index
     df_merged = pd.concat(
@@ -74,10 +74,7 @@ def read_data_2(excel_file, skip=0):
     ignore_index=True)
 
     # rename columns to new names
-    df_merged.columns = ['Plats', 'Huvudman', 
-              'Totalt (A-F)', 'Flickor (A-F)', 'Pojkar (A-F)', 
-              'Totalt (A-E)', 'Flickor (A-E)', 'Pojkar (A-E)', 
-              'Totalt (poäng)', 'Flickor (poäng)', 'Pojkar (poäng)', 'sheet']
+    df_merged.columns = columns
 
     # create a reference dataframe of sheet "Engelska"
     ref_sheet = df_merged[df_merged['sheet']=='Engelska']
@@ -105,7 +102,7 @@ def read_data_2(excel_file, skip=0):
 def sheet_filter(df, sheet_name):
     
     # create df with the selected sheet name
-    df_sheet = df[df["sheet"] == sheet_name]
+    df_sheet = df[df["sheet"] == sheet_name]#df.query("sheet == 'sheet_name'")
 
     # 
     df_clean_sheet = df_sheet.drop(columns=["sheet"]).reset_index(drop=True)
@@ -156,3 +153,9 @@ if __name__ == "__main__":
     # the returned cleaned file
     cleaned_df = read_data_2(excel_file, 8)
     print(cleaned_df)
+
+    df = cleaned_df
+    
+    svenska = sheet_filter(df, "Matematik")
+    
+    print("test",svenska)
