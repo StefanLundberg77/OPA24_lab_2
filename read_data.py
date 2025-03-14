@@ -43,9 +43,9 @@ def sheet_filter(df, sheet_name):
 
     return df_clean_sheet
 
-def read_data_2(excel_file2, sheets_to_read, skip=0, row=0):
+def read_data_2(excel_file2, sheets_to_read, cols, skip=0, row=0):
 
-    df = pd.read_excel(excel_file2, sheets_to_read, skiprows = skip, nrows = row,  usecols = 'A,H:J')
+    df = pd.read_excel(excel_file2, sheets_to_read, skiprows = skip, nrows = row,  usecols = cols)
 
     df.set_index('Unnamed: 0', inplace=True)
 
