@@ -61,12 +61,17 @@ if __name__ == "__main__":
 
     # the returned cleaned file
     cleaned_df = read_data_2(excel_file, 8)
+
+    # test print
     print(cleaned_df)
 
+    # rename df
     df = cleaned_df
     
+    # test function
     svenska = sheet_filter(df, "Matematik")
     
+    # test print
     print("test",svenska)
 
 
