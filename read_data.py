@@ -1,73 +1,11 @@
 import pandas as pd
-#import numpy as np    
-#pd.set_option('future.no_silent_downcasting', True)
 
 # reading data function
-def read_data(excel_file, skip=0):
+def read_data(excel_file, sheets_to_read, columns, skip=0):
+
+    # Data cleaning    
     
-    # data cleaning
-    # creates a dict with the sheets and their respective DataFrames
-    dfs = pd.read_excel(excel_file, sheet_name=None, skiprows=skip)
-
-    # creates a list of tuples with dfs dimensions of the first sheet
-    size = dfs[list(dfs.keys())[0]].shape
-
-    # loop through and identify sheets with different dimensions then the first sheet
-    sheets_to_drop = [sheet_name for sheet_name, df in dfs.items() if df.shape != size]
-
-    # sheet 1 as reference sheet
-    ref_sheet = dfs[list(dfs.keys())[0]]
-
-    # loop through dicts and their dataframes
-    for sheet, df in dfs.items():
-        
-        # Loopa genom referensens kolumner
-        for col in ref_sheet.columns:  
-
-            # Kontrollera att kolumnen finns i det aktuella bladet
-            if col in df.columns:  
-                
-                df[col] = df[col].map(lambda x: 0 if x == ".." else (100 if x == "~100" else x))
-                
-                try:
-                    if ref_sheet.dtypes[col] in [int, float]:
-                        df[col] = pd.to_numeric(df[col], errors="coerce")
-                    else:
-                        df[col] = df[col].astype(ref_sheet.dtypes[col], errors="ignore")
-                except FutureWarning:
-                    raise
-                        
-   
-    # loop the list and drop unwanted sheet
-    dfs = {sheet: df for sheet, df in dfs.items() if sheet not in sheets_to_drop}
-
-    # rename columns by function
-    dfs = rename_columns(dfs)
-    
-    # return the sheets with relevant data
-    return dfs
-
-# list of names for layout
-column_names = ["Plats",  
-                  "Huvudman",
-                  "Totalt (A-F)",
-                  "Flickor (A-F)",
-                  "Pojkar (A-F)",
-                  "Totalt (A-E)",
-                  "Flickor (A-E)",
-                  "Pojkar(A-E)",
-                  "Totalt (poäng)",
-                  "Flickor (poäng)",
-                  "Pojkar (poäng)"]
-
-# alternative function
-def read_data_2(excel_file, sheets_to_read, columns, skip=0):
-
-    # reading file and cleaning data    
-    # sheets to read
-    
-
-    # read excel file and create dicts of the sheets and merge them into a dataframe with new column with sheet names as index
+    # read excel file and create dicts of the sheets and merge them into a dataframe with new column with sheet names as column values
     df_merged = pd.concat(
     [pd.read_excel(excel_file, sheet_name=sheet, skiprows=skip, index_col=None).assign(Sheet=sheet)
     for sheet in sheets_to_read],
@@ -91,10 +29,6 @@ def read_data_2(excel_file, sheets_to_read, columns, skip=0):
     # save clean dataframe to df
     df = df_clean
 
-    # testing len for missing rows
-    # print(len(df_merged)) 
-    # print(len(df_clean))
-    
     # return converted and cleaned dataframe            
     return df
 
@@ -109,40 +43,15 @@ def sheet_filter(df, sheet_name):
 
     return df_clean_sheet
 
+def read_data_2(excel_file2, sheets_to_read, skip=0, row=0):
 
-# function for renaming columns in dict
-def rename_columns(dfs):
-        
-        # iterate through dfs and change column names to match layout
-        for sheet, df in dfs.items():
-            df.columns = [column_names]
-            return dfs
+    df = pd.read_excel(excel_file2, 'Tabell 1A', skiprows = skip, nrows = row,  usecols = 'A,H:J')
 
-def convert_data(dfs):
+    df.set_index('Unnamed: 0', inplace=True)
 
-    # create a ref_sheet
-    ref_sheet = dfs[list(dfs.keys())[0]]
+    df.index.names = ['Läsår']
 
-    for sheet, df in dfs.items():
-        
-        for col in ref_sheet.columns:  # Loopa genom referensens kolumner
-
-            if col in df.columns:  # Kontrollera att kolumnen finns i det aktuella bladet
-                
-                df[col] = df[col].replace({"..": 0, "~100": 100}, regex=False)  # Ersätt värden först
-
-                
-                if ref_sheet.dtypes[col] in [int, float]:
-                    df[col] = pd.to_numeric(df[col], errors="coerce")
-                else:
-                    df[col] = df[col].astype(ref_sheet.dtypes[col], errors="ignore")
-    return dfs
-
-
-
-
-
-
+    return df
 
 #for testing purpose 
 if __name__ == "__main__":
@@ -159,3 +68,90 @@ if __name__ == "__main__":
     svenska = sheet_filter(df, "Matematik")
     
     print("test",svenska)
+
+
+# ----------------------------------------------------------------------------
+# Old func    
+# def read_data(excel_file, skip=0):
+    
+#     # data cleaning
+#     # creates a dict with the sheets and their respective DataFrames
+#     dfs = pd.read_excel(excel_file, sheet_name=None, skiprows=skip)
+
+#     # creates a list of tuples with dfs dimensions of the first sheet
+#     size = dfs[list(dfs.keys())[0]].shape
+
+#     # loop through and identify sheets with different dimensions then the first sheet
+#     sheets_to_drop = [sheet_name for sheet_name, df in dfs.items() if df.shape != size]
+
+#     # sheet 1 as reference sheet
+#     ref_sheet = dfs[list(dfs.keys())[0]]
+
+#     # loop through dicts and their dataframes
+#     for sheet, df in dfs.items():
+        
+#         # Loopa genom referensens kolumner
+#         for col in ref_sheet.columns:  
+
+#             # Kontrollera att kolumnen finns i det aktuella bladet
+#             if col in df.columns:  
+                
+#                 df[col] = df[col].map(lambda x: 0 if x == ".." else (100 if x == "~100" else x))
+                
+#                 try:
+#                     if ref_sheet.dtypes[col] in [int, float]:
+#                         df[col] = pd.to_numeric(df[col], errors="coerce")
+#                     else:
+#                         df[col] = df[col].astype(ref_sheet.dtypes[col], errors="ignore")
+#                 except FutureWarning:
+#                     raise
+                        
+   
+#     # loop the list and drop unwanted sheet
+#     dfs = {sheet: df for sheet, df in dfs.items() if sheet not in sheets_to_drop}
+
+#     # rename columns by function
+#     dfs = rename_columns(dfs)
+    
+#     # return the sheets with relevant data
+#     return dfs
+
+# # list of names for layout
+# column_names = ["Plats",  
+#                   "Huvudman",
+#                   "Totalt (A-F)",
+#                   "Flickor (A-F)",
+#                   "Pojkar (A-F)",
+#                   "Totalt (A-E)",
+#                   "Flickor (A-E)",
+#                   "Pojkar(A-E)",
+#                   "Totalt (poäng)",
+#                   "Flickor (poäng)",
+#                   "Pojkar (poäng)"]
+
+# def convert_data(dfs):
+
+#     # create a ref_sheet
+#     ref_sheet = dfs[list(dfs.keys())[0]]
+
+#     for sheet, df in dfs.items():
+        
+#         for col in ref_sheet.columns:  # Loopa genom referensens kolumner
+
+#             if col in df.columns:  # Kontrollera att kolumnen finns i det aktuella bladet
+                
+#                 df[col] = df[col].replace({"..": 0, "~100": 100}, regex=False)  # Ersätt värden först
+
+                
+#                 if ref_sheet.dtypes[col] in [int, float]:
+#                     df[col] = pd.to_numeric(df[col], errors="coerce")
+#                 else:
+#                     df[col] = df[col].astype(ref_sheet.dtypes[col], errors="ignore")
+#     return dfs
+# function for renaming columns in dict
+# def rename_columns(dfs):
+        
+#         # iterate through dfs and change column names to match layout
+#         for sheet, df in dfs.items():
+#             df.columns = [column_names]
+#             return dfs
